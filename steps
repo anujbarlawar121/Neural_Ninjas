@@ -1,0 +1,57 @@
+1. **Open Website**
+   User accesses the HostelSync web application.
+
+2. **Authentication Check (Token Validation)**
+   System checks for an existing authentication token in `localStorage`.
+
+3. **Show Login Page (If Not Authenticated)**
+   If no valid token is found, the login screen is displayed.
+
+4. **User Login (API Call)**
+   User enters credentials → request is sent to backend API for verification.
+
+5. **Store Token (localStorage)**
+   On successful login, a secure token is stored in `localStorage` for session management.
+
+6. **Load Dashboard**
+   User is redirected to the main dashboard interface.
+
+7. **Fetch Dashboard Data**
+   System fetches real-time data such as:
+
+   * Hostel statistics
+   * Gate pass records
+   * Room allocation data
+   * Notifications
+
+8. **Gate Pass Flow (Create → Approve/Deny)**
+
+   * Students create gate pass requests
+   * Wardens/Admin approve or deny
+   * Actions trigger notifications & updates
+
+9. **Room Allocation Flow**
+
+   * Assign / update room allocations
+   * Real-time occupancy tracking
+
+10. **Complaint System + SLA Tracking**
+
+* Students raise complaints
+* System tracks resolution time (SLA)
+* Auto-escalation for delays
+
+11. **Notification System (Real-Time)**
+
+* Live updates for gate passes, complaints, alerts
+* Delivered via UI and optional SMS
+
+12. **Mess Voting System**
+
+* Students vote on menu options
+* Real-time results displayed
+
+13. **Logout (End Session)**
+
+* Clear token from `localStorage`
+* Redirect user to login page
