@@ -1,0 +1,100 @@
+# 🏠 HostelSync
+
+**TGPDS-03 · Web & App Development**
+
+A unified hostel operations platform that replaces fragmented registers and WhatsApp chaos with digital workflows — gate pass approvals, parent SMS alerts, real-time room allocation, and mess menu voting, all in one place.
+
+---
+
+## 🚨 Problem Statement
+
+Hostel wardens today manage everything manually:
+
+- Attendance tracked in physical registers  
+- Gate passes approved through WhatsApp messages  
+- Visitor logs maintained in notebooks  
+- Mess feedback scattered across group chats  
+- Room allocations handled over phone calls  
+
+❗ This creates operational chaos:
+- Lost records  
+- Delayed approvals  
+- No accountability  
+- Zero visibility for parents or administration  
+
+---
+
+## ✅ Solution
+
+**HostelSync** is a centralized hostel management platform that digitizes every touchpoint of hostel administration.
+
+---
+
+## 🚀 Core Features
+
+### 🪪 Digital Gate Pass Workflow
+- Students submit gate pass requests digitally  
+- Wardens approve or deny in one click  
+- Parents receive automatic SMS on departure & return  
+
+---
+
+### 📲 Parent SMS & Room Management
+- Instant SMS notifications to parents  
+- Real-time room allocation system  
+- Live room status (occupied / vacant / maintenance)  
+
+---
+
+### ⚠️ Complaint Escalation System
+- Students raise complaints  
+- SLA-based tracking  
+- Automatic escalation on delay  
+
+---
+
+### 🍽 Mess Menu Voting
+- Weekly voting system  
+- Real-time results  
+- Data-driven mess planning  
+
+---
+
+### 📊 Operations Dashboard
+- Single-screen admin control panel  
+- Pending gate passes  
+- SMS logs  
+- Complaint tracking  
+- Room status overview  
+
+---
+
+## 🖥️ Dashboard Preview
+
+The HostelSync dashboard provides:
+
+- 📈 **Live Stats Bar** — active students, pending passes, SMS count  
+- 📋 **Gate Pass Table** — approve/deny with status tracking  
+- 🏠 **Room Allocation Grid** — visual block-wise layout  
+- ⚠️ **Complaint SLA Tracker** — CRITICAL / WARNING / OK  
+- 📊 **Mess Vote Chart** — real-time voting results  
+- 🔄 **Live Activity Feed** — all hostel events  
+
+*(Add screenshots here)*
+
+---
+
+## 🛠️ Tech Stack
+
+- Frontend: (Add yours — React / HTML / Flutter)
+- Backend: (Node.js / Django / Flask)
+- Database: (MongoDB / MySQL)
+- APIs: SMS Gateway (if used)
+
+---
+
+## ⚙️ Installation
+
+```bash
+git clone https://github.com/anujbarlawar121/Neural_Ninjas.git
+cd Neural_Ninjas
