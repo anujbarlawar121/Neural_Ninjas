@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>HostelSync — Operations Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0a0c0f;--surface:#111418;--surface2:#181c22;--surface3:#1e232b;
+  --border:#232830;--border2:#2e3540;
+  --accent:#00e5a0;--accent-dim:rgba(0,229,160,0.12);--accent-border:rgba(0,229,160,0.25);
+  --red:#ff6b35;--red-dim:rgba(255,107,53,0.12);--red-border:rgba(255,107,53,0.25);
+  --blue:#4d9fff;--blue-dim:rgba(77,159,255,0.12);--blue-border:rgba(77,159,255,0.25);
+  --yellow:#ffd93d;--yellow-dim:rgba(255,217,61,0.12);--yellow-border:rgba(255,217,61,0.3);
+  --text:#e8edf3;--text-muted:#6b7785;--text-dim:#3d4855;
+  --tag-bg:#0d2d1e;
+  --radius:12px;--radius-sm:7px;
+  --accent2:#ff6b35;--accent3:#4d9fff;--warn:#ffd93d;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,160,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,160,0.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;top:-200px;left:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(0,229,160,0.06) 0%,transparent 70%);pointer-events:none;z-index:0;animation:blob 10s ease-in-out infinite;}
+@keyframes blob{0%,100%{transform:translate(0,0);}50%{transform:translate(100px,80px);}}
+
+/* SHELL */
+.shell{position:relative;z-index:1;display:grid;grid-template-columns:220px 1fr;grid-template-rows:60px 1fr;min-height:100vh;}
+
+/* TOPBAR */
+.topbar{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:60px;border-bottom:1px solid var(--border);background:rgba(10,12,15,0.95);backdrop-filter:blur(12px);position:sticky;top:0;z-index:200;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-mark{width:32px;height:32px;background:var(--accent);border-radius:5px;display:grid;place-items:center;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#000;letter-spacing:-1px;}
+.logo-text{font-size:17px;font-weight:800;letter-spacing:-0.3px;}
+.logo-text span{color:var(--accent);}
+.tag{font-family:'Space Mono',monospace;font-size:10px;background:var(--tag-bg);border:1px solid var(--accent-border);color:var(--accent);padding:2px 8px;border-radius:99px;letter-spacing:1px;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.tb-search{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;color:var(--text-muted);font-family:'Space Mono',monospace;font-size:11px;width:180px;outline:none;transition:border-color 0.2s;}
+.tb-search:focus{border-color:var(--accent);color:var(--text);}
+.tb-btn{background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:var(--radius-sm);padding:6px 14px;font-family:'Space Mono',monospace;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px;}
+.tb-btn:hover{border-color:var(--accent);color:var(--accent);}
+.tb-btn.primary{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700;}
+.tb-btn.primary:hover{opacity:0.85;}
+.notif-bell{position:relative;cursor:pointer;width:34px;height:34px;display:grid;place-items:center;border-radius:var(--radius-sm);border:1px solid var(--border);font-size:16px;transition:border-color 0.2s;}
+.notif-bell:hover{border-color:var(--accent);}
+.notif-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;background:var(--red);border-radius:50%;border:1.5px solid var(--bg);}
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--blue));display:grid;place-items:center;font-size:13px;font-weight:700;color:#000;cursor:pointer;}
+
+/* SIDEBAR */
+.sidebar{border-right:1px solid var(--border);padding:20px 0;background:rgba(17,20,24,0.8);position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px;}
+.sb-section{padding:0 14px 18px;}
+.sb-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;padding:0 8px 8px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:600;color:var(--text-muted);transition:all 0.15s;margin-bottom:1px;border:1px solid transparent;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:var(--accent-dim);color:var(--accent);border-color:var(--accent-border);}
+.nav-icon{font-size:15px;width:18px;text-align:center;flex-shrink:0;}
+.nav-badge{margin-left:auto;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;padding:1px 6px;border-radius:99px;}
+.nb-red{background:var(--red);color:#fff;}
+.nb-yellow{background:var(--yellow);color:#000;}
+.nb-blue{background:var(--blue);color:#fff;}
+.sb-divider{border:none;border-top:1px solid var(--border);margin:0 14px 18px;}
+.sb-warden{margin:0 14px;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);display:flex;align-items:center;gap:10px;}
+.sb-warden-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--blue));display:grid;place-items:center;font-size:12px;font-weight:700;color:#000;flex-shrink:0;}
+.sb-warden-name{font-size:12px;font-weight:700;line-height:1.2;}
+.sb-warden-role{font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:0.5px;}
+
+/* MAIN */
+.main{padding:28px 32px;overflow-y:auto;min-height:calc(100vh - 60px);}
+.main::-webkit-scrollbar{width:4px;}
+.main::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px;}
+
+/* PAGE */
+.page{display:none;}
+.page.active{display:block;animation:fadeUp 0.45s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+/* PAGE HEADER */
+.page-hdr{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px;}
+.page-title{font-size:26px;font-weight:800;letter-spacing:-0.5px;line-height:1;}
+.page-sub{font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted);margin-top:4px;letter-spacing:0.5px;}
+.live-dot{display:inline-block;width:7px;height:7px;background:var(--accent);border-radius:50%;margin-right:5px;animation:pulse 1.5s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(0.7);}}
+.hdr-actions{display:flex;gap:10px;}
+
+/* STAT GRID */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden;transition:border-color 0.2s,transform 0.2s;cursor:default;animation:fadeUp 0.5s ease both;}
+.stat-card:nth-child(1){animation-delay:0.05s;}
+.stat-card:nth-child(2){animation-delay:0.1s;}
+.stat-card:nth-child(3){animation-delay:0.15s;}
+.stat-card:nth-child(4){animation-delay:0.2s;}
+.stat-card:hover{transform:translateY(-2px);}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.sc-green::before{background:var(--accent);}
+.sc-yellow::before{background:var(--yellow);}
+.sc-blue::before{background:var(--blue);}
+.sc-red::before{background:var(--red);}
+.sc-green:hover{border-color:var(--accent);}
+.sc-yellow:hover{border-color:var(--yellow);}
+.sc-blue:hover{border-color:var(--blue);}
+.sc-red:hover{border-color:var(--red);}
+.stat-lbl{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text-muted);text-transform:uppercase;margin-bottom:10px;}
+.stat-val{font-size:34px;font-weight:800;letter-spacing:-1px;line-height:1;margin-bottom:6px;}
+.sc-green .stat-val{color:var(--accent);}
+.sc-yellow .stat-val{color:var(--yellow);}
+.sc-blue .stat-val{color:var(--blue);}
+.sc-red .stat-val{color:var(--red);}
+.stat-delta{font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted);}
+.delta-up{color:var(--accent);}
+.delta-dn{color:var(--red);}
+.stat-icon{position:absolute;top:20px;right:20px;font-size:22px;opacity:0.22;}
+
+/* PANELS */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px;animation:fadeUp 0.5s ease both;}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);}
+.panel-title{font-size:13px;font-weight:700;letter-spacing:0.2px;}
+.panel-action{font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);cursor:pointer;letter-spacing:0.5px;background:none;border:none;}
+.panel-action:hover{text-decoration:underline;}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim);padding:10px 20px;text-align:left;border-bottom:1px solid var(--border);}
+tbody tr{border-bottom:1px solid rgba(35,40,48,0.6);transition:background 0.13s;cursor:pointer;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--surface2);}
+td{padding:13px 20px;vertical-align:middle;}
+td strong{font-weight:700;}
+
+/* PILLS */
+.pill{display:inline-flex;align-items:center;gap:5px;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;letter-spacing:0.5px;}
+.pill::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;}
+.pill-pending{background:var(--yellow-dim);color:var(--yellow);border:1px solid var(--yellow-border);}
+.pill-approved{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border);}
+.pill-denied{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border);}
+.pill-returned{background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue-border);}
+.pill-open{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border);}
+.pill-inprog{background:var(--yellow-dim);color:var(--yellow);border:1px solid var(--yellow-border);}
+.pill-closed{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border);}
+.pill-occupied{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border);}
+.pill-vacant{background:var(--surface3);color:var(--text-muted);border:1px solid var(--border);}
+.pill-maint{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border);}
+
+/* ACTION BUTTONS */
+.act-btns{display:flex;gap:6px;}
+.act-btn{width:28px;height:28px;border-radius:var(--radius-sm);border:1px solid var(--border);background:none;cursor:pointer;font-size:14px;display:grid;place-items:center;transition:all 0.15s;color:var(--text-muted);}
+.act-btn:hover{border-color:var(--accent);background:rgba(0,229,160,0.1);}
+.act-btn.danger:hover{border-color:var(--red);background:var(--red-dim);color:var(--red);}
+
+/* dot aliases for dashboard compatibility */
+.dot-green,.nd-g{background:var(--accent);box-shadow:0 0 6px var(--accent);}
+.dot-orange,.nd-r{background:var(--red);box-shadow:0 0 6px var(--red);}
+.dot-blue,.nd-b{background:var(--blue);box-shadow:0 0 6px var(--blue);}
+.dot-yellow,.nd-y{background:var(--yellow);box-shadow:0 0 6px var(--yellow);}
+
+/* CONTENT GRIDS */
+.grid-2{display:grid;grid-template-columns:1fr 340px;gap:20px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+
+/* NOTIF FEED */
+.notif-list{}
+.notif-item{display:flex;gap:12px;padding:14px 20px;border-bottom:1px solid rgba(35,40,48,0.6);transition:background 0.13s;cursor:pointer;}
+.notif-item:last-child{border-bottom:none;}
+.notif-item:hover{background:var(--surface2);}
+.nd{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.nd-g{background:var(--accent);box-shadow:0 0 6px var(--accent);}
+.nd-r{background:var(--red);box-shadow:0 0 6px var(--red);}
+.nd-b{background:var(--blue);box-shadow:0 0 6px var(--blue);}
+.nd-y{background:var(--yellow);box-shadow:0 0 6px var(--yellow);}
+.notif-body{flex:1;}
+.notif-text{font-size:12.5px;font-weight:600;line-height:1.4;}
+.notif-meta{font-family:'Space Mono',monospace;font-size:10px;color:var(--text-dim);margin-top:3px;}
+
+/* ROOM MAP */
+.room-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:14px 18px 18px;}
+.room-cell{aspect-ratio:1;border-radius:var(--radius-sm);display:grid;place-items:center;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;cursor:pointer;transition:transform 0.13s,border-color 0.13s;}
+.room-cell:hover{transform:scale(1.12);}
+.rc-occ{background:var(--accent-dim);border:1px solid var(--accent-border);color:var(--accent);}
+.rc-vac{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+.rc-mnt{background:var(--red-dim);border:1px solid var(--red-border);color:var(--red);}
+.room-legend{display:flex;gap:14px;padding:0 18px 14px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;}
+
+/* VOTE BARS */
+.vote-list{padding:12px 20px 16px;}
+.vote-item{margin-bottom:14px;}
+.vote-label{display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;margin-bottom:6px;}
+.vote-pct{font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted);}
+.vote-bar-bg{height:6px;background:var(--surface2);border-radius:99px;overflow:hidden;}
+.vote-bar{height:100%;border-radius:99px;transition:width 1s ease;}
+.vb-g{background:linear-gradient(90deg,var(--accent),#00b87a);}
+.vb-b{background:linear-gradient(90deg,var(--blue),#2979ff);}
+.vb-r{background:linear-gradient(90deg,var(--red),#e05020);}
+.vb-y{background:linear-gradient(90deg,var(--yellow),#f0b800);}
+
+/* SLA */
+.sla-list{padding:10px 20px 16px;}
+.sla-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(35,40,48,0.5);}
+.sla-item:last-child{border-bottom:none;}
+.sla-ring{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-family:'Space Mono',monospace;font-size:9px;font-weight:700;flex-shrink:0;}
+.sr-ok{background:rgba(0,229,160,0.15);border:2px solid var(--accent);color:var(--accent);}
+.sr-warn{background:rgba(255,217,61,0.12);border:2px solid var(--yellow);color:var(--yellow);}
+.sr-crit{background:rgba(255,107,53,0.12);border:2px solid var(--red);color:var(--red);}
+.sla-info{flex:1;}
+.sla-ttl{font-size:12.5px;font-weight:600;}
+.sla-sub{font-family:'Space Mono',monospace;font-size:10px;color:var(--text-dim);margin-top:2px;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:500;display:none;place-items:center;}
+.modal-overlay.open{display:grid;}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:14px;width:480px;max-width:95vw;max-height:90vh;overflow-y:auto;animation:modalIn 0.25s ease;}
+@keyframes modalIn{from{opacity:0;transform:scale(0.95)translateY(10px);}to{opacity:1;transform:scale(1)translateY(0);}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border);}
+.modal-title{font-size:15px;font-weight:800;}
+.modal-close{background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer;line-height:1;padding:0;}
+.modal-body{padding:22px;}
+.modal-footer{padding:16px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
+.form-group{margin-bottom:16px;}
+.form-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px;display:block;}
+.form-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;color:var(--text);font-family:'Syne',sans-serif;font-size:13px;outline:none;transition:border-color 0.2s;}
+.form-input:focus{border-color:var(--accent);}
+.form-select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;color:var(--text);font-family:'Syne',sans-serif;font-size:13px;outline:none;cursor:pointer;}
+.form-select:focus{border-color:var(--accent);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* BUTTONS */
+.btn{padding:9px 18px;border-radius:7px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;cursor:pointer;border:none;letter-spacing:0.5px;transition:all 0.18s;}
+.btn-primary{background:var(--accent);color:#000;}
+.btn-primary:hover{opacity:0.85;transform:translateY(-1px);}
+.btn-ghost{background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn-danger{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border);}
+.btn-danger:hover{background:var(--red);color:#fff;}
+.btn-full{width:100%;border-radius:8px;}
+
+/* TOAST */
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:600;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:12px 18px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;animation:toastIn 0.3s ease;min-width:280px;}
+@keyframes toastIn{from{opacity:0;transform:translateX(30px);}to{opacity:1;transform:translateX(0);}}
+.toast-icon{font-size:16px;}
+.toast.success{border-left:3px solid var(--accent);}
+.toast.error{border-left:3px solid var(--red);}
+.toast.info{border-left:3px solid var(--blue);}
+
+/* FILTER BAR */
+.filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.filter-btn{font-family:'Space Mono',monospace;font-size:10px;padding:5px 12px;border-radius:99px;border:1px solid var(--border);background:none;color:var(--text-muted);cursor:pointer;transition:all 0.15s;letter-spacing:0.5px;}
+.filter-btn:hover,.filter-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+.filter-search{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;color:var(--text);font-family:'Space Mono',monospace;font-size:11px;outline:none;width:200px;margin-left:auto;}
+.filter-search:focus{border-color:var(--accent);}
+
+/* ROOM PAGE */
+.room-page-grid{display:grid;grid-template-columns:1fr 300px;gap:18px;}
+.block-tabs{display:flex;gap:8px;margin-bottom:16px;}
+.block-tab{font-family:'Space Mono',monospace;font-size:11px;padding:6px 16px;border-radius:99px;border:1px solid var(--border);background:none;color:var(--text-muted);cursor:pointer;transition:all 0.15s;}
+.block-tab.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700;}
+.room-big-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:18px;}
+.rbc{aspect-ratio:1.3;border-radius:var(--radius-sm);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;font-family:'Space Mono',monospace;}
+.rbc:hover{transform:scale(1.05);}
+.rbc-num{font-size:13px;font-weight:700;}
+.rbc-label{font-size:9px;margin-top:2px;letter-spacing:0.5px;}
+.rbc-occ{background:var(--accent-dim);border:1px solid var(--accent-border);color:var(--accent);}
+.rbc-vac{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+.rbc-mnt{background:var(--red-dim);border:1px solid var(--red-border);color:var(--red);}
+.room-stats-panel .stat-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(35,40,48,0.5);font-size:13px;}
+.room-stats-panel .stat-row:last-child{border-bottom:none;}
+.room-detail-card{padding:18px;}
+
+/* MESS PAGE */
+.mess-grid{display:grid;grid-template-columns:1fr 300px;gap:18px;}
+.menu-item-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color 0.15s;}
+.menu-item-card:hover{border-color:var(--accent);}
+.menu-item-card.voted{border-color:var(--accent);background:var(--accent-dim);}
+.mic-rank{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--text-dim);width:32px;flex-shrink:0;}
+.mic-info{flex:1;}
+.mic-name{font-size:14px;font-weight:700;margin-bottom:3px;}
+.mic-desc{font-size:12px;color:var(--text-muted);}
+.mic-votes{font-family:'Space Mono',monospace;font-size:12px;color:var(--text-muted);margin-left:auto;}
+.vote-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:grid;place-items:center;flex-shrink:0;transition:all 0.2s;}
+.voted .vote-check{background:var(--accent);border-color:var(--accent);color:#000;}
+
+/* COMPLAINTS PAGE */
+.complaint-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:10px;cursor:pointer;transition:border-color 0.15s;}
+.complaint-card:hover{border-color:var(--accent);}
+.cc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.cc-id{font-family:'Space Mono',monospace;font-size:10px;color:var(--text-dim);}
+.cc-title{font-size:14px;font-weight:700;margin-bottom:4px;}
+.cc-meta{font-size:12px;color:var(--text-muted);display:flex;gap:12px;}
+.cc-meta span{display:flex;align-items:center;gap:4px;}
+.sla-bar-wrap{margin-top:10px;}
+.sla-bar-bg{height:3px;background:var(--surface3);border-radius:99px;overflow:hidden;}
+.sla-bar-fill{height:100%;border-radius:99px;transition:width 0.5s;}
+
+/* VISITOR PAGE */
+.visitor-log{padding:0;}
+
+/* REPORTS PAGE */
+.report-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;}
+.report-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+.rc-title{font-size:13px;font-weight:700;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;}
+.mini-chart{height:80px;display:flex;align-items:flex-end;gap:6px;padding-top:10px;}
+.mc-bar{flex:1;border-radius:3px 3px 0 0;transition:height 0.5s ease;min-width:8px;}
+.mc-bar-g{background:linear-gradient(to top,var(--accent),rgba(0,229,160,0.4));}
+.mc-bar-b{background:linear-gradient(to top,var(--blue),rgba(77,159,255,0.4));}
+.mc-bar-r{background:linear-gradient(to top,var(--red),rgba(255,107,53,0.4));}
+.mc-bar-y{background:linear-gradient(to top,var(--yellow),rgba(255,217,61,0.4));}
+.chart-labels{display:flex;gap:6px;margin-top:6px;}
+.chart-lbl{flex:1;font-family:'Space Mono',monospace;font-size:8px;color:var(--text-dim);text-align:center;}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-muted);}
+.empty-icon{font-size:36px;margin-bottom:12px;opacity:0.4;}
+.empty-text{font-size:13px;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px;}
+
+/* bottom-grid alias for dashboard compatibility */
+.bottom-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .shell{grid-template-columns:1fr;}
+  .sidebar{display:none;}
+  .stat-grid{grid-template-columns:repeat(2,1fr);}
+  .grid-2,.grid-3,.bottom-grid{grid-template-columns:1fr;}
+  .topbar-right .tb-btn{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="logo">
+      <div class="logo-mark">HS</div>
+      <div class="logo-text">Hostel<span>Sync</span></div>
+      <div class="tag">TGPDS-03</div>
+    </div>
+    <div class="topbar-right">
+      <input class="tb-search" placeholder="Search students, rooms..." id="globalSearch" onkeyup="globalSearchFn(this.value)"/>
+      <button class="tb-btn primary" id="topnav-overview" onclick="showPage('dashboard');setTopNav(this)">Overview</button>
+      <button class="tb-btn" id="topnav-reports" onclick="showPage('reports');setTopNav(this)">Reports</button>
+      <button class="tb-btn" id="topnav-settings" onclick="showToast('Settings coming soon','info')">Settings</button>
+      <div class="notif-bell" onclick="showPage('notifications')" title="Notifications">🔔<div class="notif-dot"></div></div>
+      <div class="avatar" onclick="showToast('Warden profile','info')">W</div>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-section">
+      <div class="sb-label">Operations</div>
+      <div class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard"><span class="nav-icon">⬡</span>Dashboard</div>
+      <div class="nav-item" onclick="showPage('gatepasses')" id="nav-gatepasses"><span class="nav-icon">🪪</span>Gate Passes<span class="nav-badge nb-yellow" id="sb-pending-count">7</span></div>
+      <div class="nav-item" onclick="showPage('rooms')" id="nav-rooms"><span class="nav-icon">🏠</span>Room Alloc<span class="nav-badge nb-blue" id="sb-vacant-count">3</span></div>
+      <div class="nav-item" onclick="showPage('visitors')" id="nav-visitors"><span class="nav-icon">👥</span>Visitor Log</div>
+    </div>
+    <hr class="sb-divider"/>
+    <div class="sb-section">
+      <div class="sb-label">Communication</div>
+      <div class="nav-item" onclick="showPage('sms')" id="nav-sms"><span class="nav-icon">📲</span>SMS Alerts<span class="nav-badge nb-blue" id="sb-sms-count">12</span></div>
+      <div class="nav-item" onclick="showPage('notifications')" id="nav-notifications"><span class="nav-icon">🔔</span>Notifications<span class="nav-badge nb-red" id="sb-notif-count">5</span></div>
+      <div class="nav-item" onclick="showToast('Announcements coming soon','info')" id="nav-announcements"><span class="nav-icon">📢</span>Announcements</div>
+    </div>
+    <hr class="sb-divider"/>
+    <div class="sb-section">
+      <div class="sb-label">Mess</div>
+      <div class="nav-item" onclick="showPage('mess')" id="nav-mess"><span class="nav-icon">🍽</span>Menu Voting</div>
+      <div class="nav-item" onclick="showPage('feedback')" id="nav-feedback"><span class="nav-icon">⭐</span>Feedback</div>
+    </div>
+    <hr class="sb-divider"/>
+    <div class="sb-section">
+      <div class="sb-label">Complaints</div>
+      <div class="nav-item" onclick="showPage('complaints')" id="nav-complaints"><span class="nav-icon">⚠️</span>Complaints<span class="nav-badge nb-red" id="sb-complaint-count">14</span></div>
+      <div class="nav-item" onclick="showPage('reports')" id="nav-reports"><span class="nav-icon">📊</span>Reports</div>
+    </div>
+    <hr class="sb-divider"/>
+    <div class="sb-warden">
+      <div class="sb-warden-av">RK</div>
+      <div><div class="sb-warden-name">Rajesh Kumar</div><div class="sb-warden-role">WARDEN · BLOCK A-C</div></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main" id="mainArea">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-hdr">
+        <div>
+          <div class="page-title">Operations Overview</div>
+          <div class="page-sub"><span class="live-dot"></span>LIVE · <span id="currentDate"></span> · Block A, B, C</div>
+        </div>
+        <div class="hdr-actions">
+          <button class="btn btn-ghost" onclick="showToast('Report exported!','success')">↓ Export</button>
+          <button class="btn btn-primary" onclick="openModal('gatepass')">+ New Gate Pass</button>
+        </div>
+      </div>
+      <div class="stat-grid" id="dashStats"></div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">🪪 Gate Pass Requests</div>
+            <button class="panel-action" onclick="showPage('gatepasses')">View All →</button>
+          </div>
+          <div class="tbl-wrap"><table id="dashGateTable"></table></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">🔔 Live Feed</div>
+            <button class="panel-action" onclick="markAllRead()">Mark all read</button>
+          </div>
+          <div class="notif-list" id="dashFeed"></div>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">🏠 Room Status — Block A</div>
+            <button class="panel-action" onclick="showPage('rooms')">Full Map →</button>
+          </div>
+          <div class="room-grid" id="dashRoomGrid"></div>
+          <div class="room-legend">
+            <span style="color:var(--accent)">■ OCCUPIED</span>
+            <span style="color:var(--text-dim)">■ VACANT</span>
+            <span style="color:var(--red)">■ MAINT.</span>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">🍽 Mess Vote — <span id="voteDay"></span></div>
+            <span class="panel-action" id="totalVotes"></span>
+          </div>
+          <div class="vote-list" id="dashVotes"></div>
+          <div style="padding:0 18px 16px"><button class="btn btn-primary btn-full" onclick="showPage('mess')">View Voting →</button></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">📋 SLA Tracker</div>
+            <span class="panel-action" id="openComplaintCount"></span>
+          </div>
+          <div class="sla-list" id="dashSLA"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== GATE PASSES ===== -->
+    <div class="page" id="page-gatepasses">
+      <div class="page-hdr">
+        <div><div class="page-title">Gate Passes</div><div class="page-sub">Digital approval workflow</div></div>
+        <div class="hdr-actions">
+          <button class="btn btn-ghost" onclick="showToast('Exported!','success')">↓ Export</button>
+          <button class="btn btn-primary" onclick="openModal('gatepass')">+ New Request</button>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterGP('all',this)">All</button>
+        <button class="filter-btn" onclick="filterGP('pending',this)">Pending</button>
+        <button class="filter-btn" onclick="filterGP('approved',this)">Approved</button>
+        <button class="filter-btn" onclick="filterGP('denied',this)">Denied</button>
+        <button class="filter-btn" onclick="filterGP('returned',this)">Returned</button>
+        <input class="filter-search" placeholder="Search name / room..." oninput="searchGP(this.value)"/>
+      </div>
+      <div class="panel"><div class="tbl-wrap"><table id="fullGateTable"></table></div></div>
+    </div>
+
+    <!-- ===== ROOMS ===== -->
+    <div class="page" id="page-rooms">
+      <div class="page-hdr">
+        <div><div class="page-title">Room Allocation</div><div class="page-sub">Real-time room management</div></div>
+        <div class="hdr-actions">
+          <button class="btn btn-primary" onclick="openModal('room')">+ Allocate Room</button>
+        </div>
+      </div>
+      <div class="block-tabs">
+        <button class="block-tab active" onclick="switchBlock('A',this)">Block A</button>
+        <button class="block-tab" onclick="switchBlock('B',this)">Block B</button>
+        <button class="block-tab" onclick="switchBlock('C',this)">Block C</button>
+      </div>
+      <div class="room-page-grid">
+        <div class="panel"><div class="room-big-grid" id="fullRoomGrid"></div></div>
+        <div>
+          <div class="panel" style="margin-bottom:14px">
+            <div class="panel-head"><div class="panel-title">Block Stats</div></div>
+            <div class="room-detail-card">
+              <div class="room-stats-panel" id="blockStats"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Room Detail</div></div>
+            <div class="room-detail-card" id="roomDetail">
+              <div class="empty-state"><div class="empty-icon">🏠</div><div class="empty-text">Click a room to view details</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== VISITORS ===== -->
+    <div class="page" id="page-visitors">
+      <div class="page-hdr">
+        <div><div class="page-title">Visitor Log</div><div class="page-sub">Manage and track hostel visitors</div></div>
+        <div class="hdr-actions">
+          <button class="btn btn-primary" onclick="openModal('visitor')">+ Log Visitor</button>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterVisitor('all',this)">All</button>
+        <button class="filter-btn" onclick="filterVisitor('active',this)">Active</button>
+        <button class="filter-btn" onclick="filterVisitor('exited',this)">Exited</button>
+      </div>
+      <div class="panel"><div class="tbl-wrap"><table id="visitorTable"></table></div></div>
+    </div>
+
+    <!-- ===== SMS ===== -->
+    <div class="page" id="page-sms">
+      <div class="page-hdr">
+        <div><div class="page-title">SMS Alerts</div><div class="page-sub">Parent notifications &amp; logs</div></div>
+        <div class="hdr-actions">
+          <button class="btn btn-primary" onclick="openModal('sms')">+ Send SMS</button>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="panel"><div class="panel-head"><div class="panel-title">SMS Log</div><span class="panel-action" id="smsCount"></span></div><div class="tbl-wrap"><table id="smsTable"></table></div></div>
+        <div class="panel"><div class="panel-head"><div class="panel-title">Quick Send</div></div>
+          <div style="padding:18px">
+            <div class="form-group"><label class="form-label">Recipient</label><select class="form-select" id="quickSmsTo"><option>All Parents</option><option>Block A Parents</option><option>Block B Parents</option><option>Block C Parents</option></select></div>
+            <div class="form-group"><label class="form-label">Message</label><textarea class="form-input" id="quickSmsMsg" rows="4" placeholder="Type your message..."></textarea></div>
+            <button class="btn btn-primary btn-full" onclick="sendQuickSMS()">Send SMS</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== NOTIFICATIONS ===== -->
+    <div class="page" id="page-notifications">
+      <div class="page-hdr">
+        <div><div class="page-title">Notifications</div><div class="page-sub">All activity alerts</div></div>
+        <div class="hdr-actions"><button class="btn btn-ghost" onclick="markAllRead()">Mark all read</button></div>
+      </div>
+      <div class="panel"><div class="notif-list" id="fullNotifList"></div></div>
+    </div>
+
+    <!-- ===== MESS ===== -->
+    <div class="page" id="page-mess">
+      <div class="page-hdr">
+        <div><div class="page-title">Mess Menu Voting</div><div class="page-sub">Weekly menu · Cast your vote</div></div>
+        <div class="hdr-actions"><button class="btn btn-ghost" onclick="openModal('addmenu')">+ Add Item</button></div>
+      </div>
+      <div class="mess-grid">
+        <div>
+          <div class="panel" style="margin-bottom:16px">
+            <div class="panel-head"><div class="panel-title">🍽 This Week's Menu Options</div><span class="panel-action" id="messVoteInfo"></span></div>
+            <div style="padding:14px 18px" id="messMenuItems"></div>
+            <div style="padding:0 18px 18px"><button class="btn btn-primary btn-full" onclick="submitVote()" id="voteSubmitBtn">Submit Vote</button></div>
+          </div>
+        </div>
+        <div>
+          <div class="panel" style="margin-bottom:14px">
+            <div class="panel-head"><div class="panel-title">Live Results</div></div>
+            <div class="vote-list" id="messLiveResults"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Mess Feedback</div></div>
+            <div style="padding:14px 18px" id="messFeedbackPanel"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== FEEDBACK ===== -->
+    <div class="page" id="page-feedback">
+      <div class="page-hdr">
+        <div><div class="page-title">Mess Feedback</div><div class="page-sub">Student ratings &amp; comments</div></div>
+        <div class="hdr-actions"><button class="btn btn-primary" onclick="openModal('feedback')">+ Add Feedback</button></div>
+      </div>
+      <div class="panel"><div class="tbl-wrap"><table id="feedbackTable"></table></div></div>
+    </div>
+
+    <!-- ===== COMPLAINTS ===== -->
+    <div class="page" id="page-complaints">
+      <div class="page-hdr">
+        <div><div class="page-title">Complaints</div><div class="page-sub">SLA-tracked escalation system</div></div>
+        <div class="hdr-actions"><button class="btn btn-primary" onclick="openModal('complaint')">+ New Complaint</button></div>
+      </div>
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterComplaints('all',this)">All</button>
+        <button class="filter-btn" onclick="filterComplaints('open',this)">Open</button>
+        <button class="filter-btn" onclick="filterComplaints('inprogress',this)">In Progress</button>
+        <button class="filter-btn" onclick="filterComplaints('closed',this)">Closed</button>
+        <button class="filter-btn" onclick="filterComplaints('critical',this)">🔴 Critical</button>
+      </div>
+      <div id="complaintCards"></div>
+    </div>
+
+    <!-- ===== REPORTS ===== -->
+    <div class="page" id="page-reports">
+      <div class="page-hdr">
+        <div><div class="page-title">Reports &amp; Analytics</div><div class="page-sub">Hostel operations summary</div></div>
+        <div class="hdr-actions"><button class="btn btn-ghost" onclick="showToast('Report downloaded!','success')">↓ Download PDF</button></div>
+      </div>
+      <div class="report-grid" id="reportGrid"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalIfOutside(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">Modal</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ==================== DATA STORE ====================
+const DB = {
+  gatePasses: [
+    {id:'GP-331',student:'Arjun Mehta',room:'B-204',phone:'9876543210',exitTime:'07:30 AM',returnTime:'11:00 PM',date:'2026-03-24',reason:'Family visit',status:'pending'},
+    {id:'GP-332',student:'Priya Sharma',room:'C-108',phone:'9876543211',exitTime:'10:00 AM',returnTime:'08:00 PM',date:'2026-03-24',reason:'Medical appointment',status:'approved'},
+    {id:'GP-333',student:'Rahul Singh',room:'A-312',phone:'9876543212',exitTime:'06:00 PM',returnTime:'10:30 PM',date:'2026-03-24',reason:'College event',status:'pending'},
+    {id:'GP-334',student:'Neha Gupta',room:'B-110',phone:'9876543213',exitTime:'02:00 PM',returnTime:'11:59 PM',date:'2026-03-23',reason:'Shopping',status:'denied'},
+    {id:'GP-335',student:'Karan Patel',room:'A-401',phone:'9876543214',exitTime:'09:00 AM',returnTime:'09:00 PM',date:'2026-03-24',reason:'Sports tournament',status:'approved'},
+    {id:'GP-336',student:'Ananya Joshi',room:'C-205',phone:'9876543215',exitTime:'03:00 PM',returnTime:'07:00 PM',date:'2026-03-24',reason:'Library visit',status:'returned'},
+    {id:'GP-337',student:'Vivek Rao',room:'A-118',phone:'9876543216',exitTime:'08:00 AM',returnTime:'06:00 PM',date:'2026-03-24',reason:'Internship',status:'approved'},
+    {id:'GP-338',student:'Pooja Nair',room:'B-301',phone:'9876543217',exitTime:'11:00 AM',returnTime:'09:00 PM',date:'2026-03-24',reason:'Family outing',status:'pending'},
+    {id:'GP-339',student:'Siddharth Verma',room:'C-410',phone:'9876543218',exitTime:'04:00 PM',returnTime:'10:00 PM',date:'2026-03-24',reason:'Personal work',status:'pending'},
+    {id:'GP-340',student:'Meera Pillai',room:'A-222',phone:'9876543219',exitTime:'07:00 AM',returnTime:'08:00 PM',date:'2026-03-23',reason:'Home visit',status:'returned'},
+  ],
+  rooms: {
+    A: [
+      {num:'101',status:'occupied',student:'Arjun Mehta',since:'Aug 2025'},
+      {num:'102',status:'occupied',student:'Ravi Kumar',since:'Aug 2025'},
+      {num:'103',status:'vacant',student:null,since:null},
+      {num:'104',status:'occupied',student:'Suresh Nair',since:'Jan 2026'},
+      {num:'105',status:'maintenance',student:null,since:null},
+      {num:'201',status:'occupied',student:'Rahul Singh',since:'Aug 2025'},
+      {num:'202',status:'vacant',student:null,since:null},
+      {num:'203',status:'occupied',student:'Deepak Sharma',since:'Aug 2025'},
+      {num:'204',status:'occupied',student:'Mohan Lal',since:'Jan 2026'},
+      {num:'205',status:'occupied',student:'Arun Tiwari',since:'Aug 2025'},
+      {num:'301',status:'occupied',student:'Ramesh Yadav',since:'Aug 2025'},
+      {num:'302',status:'occupied',student:'Vijay Bhat',since:'Aug 2025'},
+      {num:'303',status:'occupied',student:'Nikhil Joshi',since:'Jan 2026'},
+      {num:'304',status:'vacant',student:null,since:null},
+      {num:'305',status:'occupied',student:'Sanjay Patil',since:'Aug 2025'},
+      {num:'401',status:'occupied',student:'Karan Patel',since:'Aug 2025'},
+      {num:'402',status:'occupied',student:'Prateek Sen',since:'Aug 2025'},
+      {num:'403',status:'occupied',student:'Alok Gupta',since:'Jan 2026'},
+      {num:'404',status:'occupied',student:'Vishal Singh',since:'Aug 2025'},
+      {num:'405',status:'occupied',student:'Tarun Mehta',since:'Jan 2026'},
+    ],
+    B: [
+      {num:'101',status:'occupied',student:'Pooja Nair',since:'Aug 2025'},
+      {num:'102',status:'occupied',student:'Sneha Rao',since:'Aug 2025'},
+      {num:'103',status:'occupied',student:'Kavya Pillai',since:'Jan 2026'},
+      {num:'104',status:'maintenance',student:null,since:null},
+      {num:'105',status:'vacant',student:null,since:null},
+      {num:'201',status:'occupied',student:'Divya Menon',since:'Aug 2025'},
+      {num:'202',status:'occupied',student:'Priya Sharma',since:'Aug 2025'},
+      {num:'203',status:'occupied',student:'Swati Jain',since:'Jan 2026'},
+      {num:'204',status:'occupied',student:'Rekha Nair',since:'Aug 2025'},
+      {num:'205',status:'vacant',student:null,since:null},
+      {num:'301',status:'occupied',student:'Anita Kumar',since:'Aug 2025'},
+      {num:'302',status:'occupied',student:'Lata Desai',since:'Aug 2025'},
+      {num:'303',status:'vacant',student:null,since:null},
+      {num:'304',status:'occupied',student:'Geeta Shah',since:'Jan 2026'},
+      {num:'305',status:'occupied',student:'Manju Tiwari',since:'Aug 2025'},
+      {num:'401',status:'occupied',student:'Shalini Verma',since:'Aug 2025'},
+      {num:'402',status:'occupied',student:'Archana Joshi',since:'Jan 2026'},
+      {num:'403',status:'occupied',student:'Nisha Patel',since:'Aug 2025'},
+      {num:'404',status:'maintenance',student:null,since:null},
+      {num:'405',status:'occupied',student:'Ritu Singh',since:'Aug 2025'},
+    ],
+    C: [
+      {num:'101',status:'occupied',student:'Siddharth Verma',since:'Aug 2025'},
+      {num:'102',status:'occupied',student:'Rohan Das',since:'Aug 2025'},
+      {num:'103',status:'occupied',student:'Akash Jain',since:'Jan 2026'},
+      {num:'104',status:'vacant',student:null,since:null},
+      {num:'105',status:'occupied',student:'Manish Rai',since:'Aug 2025'},
+      {num:'201',status:'occupied',student:'Ananya Joshi',since:'Aug 2025'},
+      {num:'202',status:'occupied',student:'Vikram Sen',since:'Aug 2025'},
+      {num:'203',status:'occupied',student:'Kunal Shah',since:'Jan 2026'},
+      {num:'204',status:'maintenance',student:null,since:null},
+      {num:'205',status:'occupied',student:'Harish Nanda',since:'Aug 2025'},
+      {num:'301',status:'occupied',student:'Pankaj Tiwari',since:'Aug 2025'},
+      {num:'302',status:'vacant',student:null,since:null},
+      {num:'303',status:'occupied',student:'Gaurav Malhotra',since:'Aug 2025'},
+      {num:'304',status:'occupied',student:'Saurabh Roy',since:'Jan 2026'},
+      {num:'305',status:'occupied',student:'Ajay Bose',since:'Aug 2025'},
+      {num:'401',status:'occupied',student:'Rahul Dey',since:'Aug 2025'},
+      {num:'402',status:'occupied',student:'Nitin Joshi',since:'Aug 2025'},
+      {num:'403',status:'occupied',student:'Sumit Yadav',since:'Jan 2026'},
+      {num:'404',status:'vacant',student:null,since:null},
+      {num:'405',status:'occupied',student:'Aditya Singh',since:'Aug 2025'},
+    ]
+  },
+  visitors: [
+    {id:'V-001',name:'Mr. Suresh Mehta',visiting:'Arjun Mehta',room:'B-204',relation:'Father',inTime:'10:30 AM',outTime:'12:30 PM',date:'2026-03-24',status:'exited'},
+    {id:'V-002',name:'Mrs. Kavita Singh',visiting:'Rahul Singh',room:'A-312',relation:'Mother',inTime:'02:00 PM',outTime:null,date:'2026-03-24',status:'active'},
+    {id:'V-003',name:'Dr. Prakash Gupta',visiting:'Neha Gupta',room:'B-110',relation:'Father',inTime:'09:00 AM',outTime:'11:00 AM',date:'2026-03-24',status:'exited'},
+    {id:'V-004',name:'Ms. Riya Patel',visiting:'Karan Patel',room:'A-401',relation:'Sister',inTime:'03:30 PM',outTime:null,date:'2026-03-24',status:'active'},
+    {id:'V-005',name:'Mr. Ajay Sharma',visiting:'Priya Sharma',room:'C-108',relation:'Uncle',inTime:'11:00 AM',outTime:'01:30 PM',date:'2026-03-23',status:'exited'},
+    {id:'V-006',name:'Mrs. Geeta Nair',visiting:'Pooja Nair',room:'B-301',relation:'Mother',inTime:'08:00 AM',outTime:'10:00 AM',date:'2026-03-23',status:'exited'},
+  ],
+  smslogs: [
+    {id:'SMS-101',to:'Mrs. Kamla Mehta',phone:'9876500001',student:'Arjun Mehta',message:'Gate pass approved. Exit: 7:30 AM, Return: 11:00 PM.',time:'07:28 AM',status:'delivered'},
+    {id:'SMS-102',to:'Mr. Rajan Singh',phone:'9876500002',student:'Rahul Singh',message:'Your ward Rahul Singh has exited hostel premises.',time:'06:02 PM',status:'delivered'},
+    {id:'SMS-103',to:'Mrs. Lata Sharma',phone:'9876500003',student:'Priya Sharma',message:'Gate pass approved for medical appointment.',time:'09:58 AM',status:'delivered'},
+    {id:'SMS-104',to:'All Parents',phone:'BROADCAST',student:'All Students',message:'Hostel curfew reminder: all students must return by 10:30 PM tonight.',time:'08:00 PM',status:'delivered'},
+    {id:'SMS-105',to:'Mr. Sunil Patel',phone:'9876500005',student:'Karan Patel',message:'Your ward Karan Patel has returned safely.',time:'09:05 PM',status:'delivered'},
+    {id:'SMS-106',to:'Mrs. Anjali Joshi',phone:'9876500006',student:'Ananya Joshi',message:'Gate pass returned. Ananya is back in hostel.',time:'07:12 PM',status:'delivered'},
+  ],
+  notifications: [
+    {type:'red',text:'SLA breach imminent — Complaint #C-047 overdue by 3h',meta:'2 min ago · Block B',read:false},
+    {type:'green',text:'Parent SMS sent for Arjun Mehta (gate pass approved)',meta:'9 min ago · Auto-triggered',read:false},
+    {type:'blue',text:'Room A-304 freed up — ready for allocation',meta:'18 min ago · System',read:false},
+    {type:'yellow',text:'Mess voting open — Sunday dinner · 210 votes cast',meta:'1 hr ago · Mess Committee',read:false},
+    {type:'green',text:'Gate pass #GP-336 returned on time — Ananya Joshi',meta:'2 hr ago · Auto',read:false},
+    {type:'red',text:'Visitor overstay flagged — Block C lobby, V-002',meta:'3 hr ago · Security',read:true},
+    {type:'blue',text:'New complaint filed — Water supply Block B (C-047)',meta:'4 hr ago · Vivek Rao',read:true},
+    {type:'green',text:'SMS broadcast sent to 842 parents',meta:'8 hr ago · Admin',read:true},
+  ],
+  messMenu: [
+    {id:1,name:'Rajma Chawal',desc:'Kidney beans curry with steamed rice',emoji:'🫘',votes:79},
+    {id:2,name:'Paneer Butter Masala',desc:'Cottage cheese in rich tomato gravy',emoji:'🧀',votes:57},
+    {id:3,name:'Chole Bhature',desc:'Spiced chickpeas with fried bread',emoji:'🥘',votes:44},
+    {id:4,name:'Dal Makhani',desc:'Slow-cooked lentils with butter',emoji:'🥣',votes:30},
+  ],
+  userVote: null,
+  feedback: [
+    {id:'FB-001',student:'Arjun Mehta',room:'B-204',date:'2026-03-23',meal:'Lunch',rating:4,comment:'Food was good, portion could be bigger.',status:'reviewed'},
+    {id:'FB-002',student:'Priya Sharma',room:'C-108',date:'2026-03-23',meal:'Dinner',rating:2,comment:'Dal was too salty. Needs improvement.',status:'pending'},
+    {id:'FB-003',student:'Rahul Singh',room:'A-312',date:'2026-03-22',meal:'Breakfast',rating:5,comment:'Excellent idli-sambar today!',status:'reviewed'},
+    {id:'FB-004',student:'Neha Gupta',room:'B-110',date:'2026-03-22',meal:'Lunch',rating:3,comment:'Average. Rice was undercooked.',status:'pending'},
+    {id:'FB-005',student:'Karan Patel',room:'A-401',date:'2026-03-21',meal:'Dinner',rating:4,comment:'Paneer dish was great.',status:'reviewed'},
+  ],
+  complaints: [
+    {id:'C-047',title:'Water supply disruption',location:'Block B bathroom',block:'B',priority:'critical',status:'open',student:'Vivek Rao',room:'B-302',filed:'2026-03-22 09:00',slaHours:24,elapsed:27,assignedTo:'Maintenance Team'},
+    {id:'C-048',title:'Wi-Fi outage in study room',location:'Block C, Room 210',block:'C',priority:'high',status:'inprogress',student:'Rohan Das',room:'C-102',filed:'2026-03-23 14:00',slaHours:8,elapsed:5,assignedTo:'IT Team'},
+    {id:'C-049',title:'Broken chair and table',location:'Room A-105',block:'A',priority:'medium',status:'inprogress',student:'Suresh Nair',room:'A-104',filed:'2026-03-23 18:00',slaHours:48,elapsed:12,assignedTo:'Maintenance'},
+    {id:'C-050',title:'Mess food quality issue',location:'Main mess hall',block:'ALL',priority:'high',status:'open',student:'Neha Gupta',room:'B-110',filed:'2026-03-24 07:00',slaHours:8,elapsed:3,assignedTo:null},
+    {id:'C-051',title:'Laundry machine broken',location:'Block C laundry',block:'C',priority:'medium',status:'open',student:'Ananya Joshi',room:'C-201',filed:'2026-03-24 08:00',slaHours:48,elapsed:2,assignedTo:null},
+    {id:'C-052',title:'Light bulb fused — corridor',location:'Block A floor 3',block:'A',priority:'low',status:'closed',student:'Karan Patel',room:'A-401',filed:'2026-03-23 10:00',slaHours:72,elapsed:14,assignedTo:'Maintenance'},
+    {id:'C-053',title:'Noise complaint — late hours',location:'Block B Room 301',block:'B',priority:'medium',status:'closed',student:'Pooja Nair',room:'B-301',filed:'2026-03-22 23:00',slaHours:24,elapsed:18,assignedTo:'Warden'},
+    {id:'C-054',title:'AC not working properly',location:'Block C Room 403',block:'C',priority:'high',status:'open',student:'Saurabh Roy',room:'C-304',filed:'2026-03-24 06:00',slaHours:8,elapsed:4,assignedTo:null},
+  ],
+  students: ['Arjun Mehta','Priya Sharma','Rahul Singh','Neha Gupta','Karan Patel','Ananya Joshi','Vivek Rao','Pooja Nair','Siddharth Verma','Meera Pillai','Rohan Das','Akash Jain'],
+  gpFilterStatus: 'all',
+  gpSearchQuery: '',
+  visitorFilter: 'all',
+  complaintFilter: 'all',
+  currentBlock: 'A',
+  smsCounter: 194,
+};
+
+// ==================== UTILITIES ====================
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const el = document.getElementById('page-'+page);
+  if(el) el.classList.add('active');
+  const nav = document.getElementById('nav-'+page);
+  if(nav) nav.classList.add('active');
+  // sync topbar quick-nav
+  document.querySelectorAll('.tb-btn').forEach(b=>b.classList.remove('primary'));
+  if(page==='dashboard') { const ob=document.getElementById('topnav-overview'); if(ob) ob.classList.add('primary'); }
+  if(page==='reports')   { const rb=document.getElementById('topnav-reports');  if(rb) rb.classList.add('primary'); }
+  renderPage(page);
+}
+
+function renderPage(page) {
+  const renders = {
+    dashboard: renderDashboard,
+    gatepasses: renderGatePasses,
+    rooms: renderRooms,
+    visitors: renderVisitors,
+    sms: renderSMS,
+    notifications: renderNotifications,
+    mess: renderMess,
+    feedback: renderFeedback,
+    complaints: renderComplaints,
+    reports: renderReports,
+  };
+  if(renders[page]) renders[page]();
+}
+
+function showToast(msg, type='success', duration=3000) {
+  const icons = {success:'✓',error:'✕',info:'ℹ'};
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span class="toast-icon">${icons[type]||'•'}</span><span>${msg}</span>`;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateX(30px)'; t.style.transition='all 0.3s'; setTimeout(()=>t.remove(),300); }, duration);
+}
+
+function getPillClass(status) {
+  const map = {pending:'pill-pending',approved:'pill-approved',denied:'pill-denied',returned:'pill-returned',open:'pill-open',inprogress:'pill-inprog',closed:'pill-closed',occupied:'pill-occupied',vacant:'pill-vacant',maintenance:'pill-maint',active:'pill-approved',exited:'pill-returned',delivered:'pill-approved'};
+  return map[status]||'pill-pending';
+}
+function getPillText(status) {
+  const map = {inprogress:'IN PROGRESS'};
+  return (map[status]||status).toUpperCase();
+}
+function timeAgo(mins) {
+  if(mins<60) return mins+' min ago';
+  return Math.floor(mins/60)+'h ago';
+}
+
+// ==================== DASHBOARD ====================
+function renderDashboard() {
+  document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-IN',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+  const pending = DB.gatePasses.filter(g=>g.status==='pending').length;
+  const openComplaints = DB.complaints.filter(c=>c.status!=='closed').length;
+  document.getElementById('sb-pending-count').textContent = pending;
+  document.getElementById('sb-complaint-count').textContent = openComplaints;
+
+  document.getElementById('dashStats').innerHTML = `
+    <div class="stat-card sc-green"><div class="stat-lbl">Active Students</div><div class="stat-val">842</div><div class="stat-delta delta-up">↑ 6 checked in today</div><div class="stat-icon">🏠</div></div>
+    <div class="stat-card sc-yellow"><div class="stat-lbl">Passes Pending</div><div class="stat-val">${pending}</div><div class="stat-delta delta-dn">↑ 3 since yesterday</div><div class="stat-icon">🪪</div></div>
+    <div class="stat-card sc-blue"><div class="stat-lbl">SMS Sent Today</div><div class="stat-val">${DB.smsCounter}</div><div class="stat-delta delta-up">↑ 34 parent alerts</div><div class="stat-icon">📲</div></div>
+    <div class="stat-card sc-red"><div class="stat-lbl">Open Complaints</div><div class="stat-val">${openComplaints}</div><div class="stat-delta delta-dn">${DB.complaints.filter(c=>c.priority==='critical'&&c.status!=='closed').length} breaching SLA</div><div class="stat-icon">⚠️</div></div>
+  `;
+
+  // Gate table (first 5)
+  const gp5 = DB.gatePasses.slice(0,5);
+  document.getElementById('dashGateTable').innerHTML = `
+    <thead><tr><th>Student</th><th>Room</th><th>Exit</th><th>Return</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>${gp5.map(g=>`
+      <tr>
+        <td><strong>${g.student}</strong></td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)">${g.room}</span></td>
+        <td>${g.exitTime}</td>
+        <td>${g.returnTime}</td>
+        <td><span class="pill ${getPillClass(g.status)}">${getPillText(g.status)}</span></td>
+        <td>${actionsForGP(g)}</td>
+      </tr>`).join('')}
+    </tbody>`;
+
+  // Feed
+  document.getElementById('dashFeed').innerHTML = DB.notifications.slice(0,6).map(n=>`
+    <div class="notif-item"><div class="nd nd-${n.type[0]==='r'?'r':n.type[0]==='g'?'g':n.type[0]==='b'?'b':'y'}"></div>
+    <div class="notif-body"><div class="notif-text">${n.text}</div><div class="notif-meta">${n.meta}</div></div></div>`).join('');
+
+  // Room mini grid (Block A)
+  document.getElementById('dashRoomGrid').innerHTML = DB.rooms.A.map(r=>`
+    <div class="room-cell rc-${r.status==='occupied'?'occ':r.status==='vacant'?'vac':'mnt'}" title="${r.student||r.status}" onclick="showPage('rooms')">${'A-'+r.num}</div>`).join('');
+
+  // Mess votes
+  const total = DB.messMenu.reduce((a,m)=>a+m.votes,0);
+  document.getElementById('voteDay').textContent = 'Sunday';
+  document.getElementById('totalVotes').textContent = total+' votes';
+  const barClasses = ['vb-g','vb-b','vb-r','vb-y'];
+  document.getElementById('dashVotes').innerHTML = DB.messMenu.map((m,i)=>{
+    const pct = Math.round(m.votes/total*100);
+    return `<div class="vote-item"><div class="vote-label"><span>${m.name}</span><span class="vote-pct">${pct}%</span></div>
+      <div class="vote-bar-bg"><div class="vote-bar ${barClasses[i]}" style="width:${pct}%"></div></div></div>`;
+  }).join('');
+
+  // SLA
+  document.getElementById('openComplaintCount').textContent = DB.complaints.filter(c=>c.status!=='closed').length+' open';
+  const slaTop = DB.complaints.filter(c=>c.status!=='closed').slice(0,5);
+  document.getElementById('dashSLA').innerHTML = slaTop.map(c=>{
+    const ring = c.elapsed>=c.slaHours?'sr-crit':c.elapsed/c.slaHours>0.6?'sr-warn':'sr-ok';
+    const ringTxt = c.elapsed>=c.slaHours?'CRIT':c.elapsed/c.slaHours>0.6?'WARN':'OK';
+    const timeInfo = c.elapsed>=c.slaHours?`Overdue ${c.elapsed-c.slaHours}h`:`Due in ${c.slaHours-c.elapsed}h`;
+    return `<div class="sla-item"><div class="sla-ring ${ring}">${ringTxt}</div>
+      <div class="sla-info"><div class="sla-ttl">${c.title}</div><div class="sla-sub">${c.id} · ${timeInfo} · ${c.status==='inprogress'?'In progress':'Open'}</div></div></div>`;
+  }).join('');
+}
+
+function actionsForGP(g) {
+  if(g.status==='pending') return `<div class="act-btns"><button class="act-btn" onclick="approveGP('${g.id}',event)" title="Approve">✓</button><button class="act-btn danger" onclick="denyGP('${g.id}',event)" title="Deny">✕</button></div>`;
+  if(g.status==='approved') return `<div class="act-btns"><button class="act-btn" onclick="returnGP('${g.id}',event)" title="Mark Returned">↩</button><button class="act-btn" onclick="viewGP('${g.id}',event)" title="View">👁</button></div>`;
+  if(g.status==='denied') return `<div class="act-btns"><button class="act-btn" onclick="approveGP('${g.id}',event)" title="Re-approve">↺</button></div>`;
+  return `<div class="act-btns"><button class="act-btn" onclick="viewGP('${g.id}',event)" title="View">👁</button></div>`;
+}
+
+function approveGP(id, e) { e&&e.stopPropagation(); const g=DB.gatePasses.find(x=>x.id===id); if(g){g.status='approved'; DB.smsCounter++; DB.notifications.unshift({type:'green',text:`Parent SMS sent for ${g.student} (gate pass approved)`,meta:'Just now · Auto-triggered',read:false}); showToast(`Gate pass approved & SMS sent to ${g.student}'s parent`,'success'); renderDashboard(); renderGatePasses&&renderGatePasses(); }}
+function denyGP(id, e) { e&&e.stopPropagation(); const g=DB.gatePasses.find(x=>x.id===id); if(g){g.status='denied'; showToast(`Gate pass denied for ${g.student}`,'error'); renderDashboard(); }}
+function returnGP(id, e) { e&&e.stopPropagation(); const g=DB.gatePasses.find(x=>x.id===id); if(g){g.status='returned'; DB.smsCounter++; DB.notifications.unshift({type:'green',text:`${g.student} returned on time`,meta:'Just now · System',read:false}); showToast(`${g.student} marked as returned`,'success'); renderDashboard(); }}
+function viewGP(id, e) { e&&e.stopPropagation(); const g=DB.gatePasses.find(x=>x.id===id); openModal('viewgp',g); }
+
+// ==================== GATE PASSES ====================
+function renderGatePasses() {
+  let data = [...DB.gatePasses];
+  if(DB.gpFilterStatus!=='all') data = data.filter(g=>g.status===DB.gpFilterStatus);
+  if(DB.gpSearchQuery) data = data.filter(g=>g.student.toLowerCase().includes(DB.gpSearchQuery)||g.room.toLowerCase().includes(DB.gpSearchQuery));
+  const t = document.getElementById('fullGateTable');
+  if(!t) return;
+  t.innerHTML = `<thead><tr><th>Pass ID</th><th>Student</th><th>Room</th><th>Exit Time</th><th>Return</th><th>Reason</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>${data.length?data.map(g=>`<tr onclick="viewGP('${g.id}')">
+      <td><span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)">${g.id}</span></td>
+      <td><strong>${g.student}</strong></td>
+      <td><span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)">${g.room}</span></td>
+      <td>${g.exitTime}</td><td>${g.returnTime}</td>
+      <td style="color:var(--text-muted);font-size:12px">${g.reason}</td>
+      <td><span class="pill ${getPillClass(g.status)}">${getPillText(g.status)}</span></td>
+      <td>${actionsForGP(g)}</td></tr>`).join(''):`<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🪪</div><div class="empty-text">No gate passes found</div></div></td></tr>`}
+    </tbody>`;
+}
+function filterGP(status, btn) {
+  DB.gpFilterStatus = status;
+  document.querySelectorAll('#page-gatepasses .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGatePasses();
+}
+function searchGP(q) { DB.gpSearchQuery = q.toLowerCase(); renderGatePasses(); }
+
+// ==================== ROOMS ====================
+function renderRooms() {
+  switchBlock(DB.currentBlock, null);
+}
+function switchBlock(block, btn) {
+  DB.currentBlock = block;
+  if(btn) { document.querySelectorAll('.block-tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
+  const rooms = DB.rooms[block];
+  const grid = document.getElementById('fullRoomGrid');
+  if(!grid) return;
+  grid.innerHTML = rooms.map(r=>`
+    <div class="rbc rbc-${r.status==='occupied'?'occ':r.status==='vacant'?'vac':'mnt'}" onclick="showRoomDetail('${block}','${r.num}')">
+      <div class="rbc-num">${block}-${r.num}</div>
+      <div class="rbc-label">${r.status.toUpperCase()}</div>
+    </div>`).join('');
+  const occ = rooms.filter(r=>r.status==='occupied').length;
+  const vac = rooms.filter(r=>r.status==='vacant').length;
+  const mnt = rooms.filter(r=>r.status==='maintenance').length;
+  document.getElementById('sb-vacant-count').textContent = vac;
+  document.getElementById('blockStats').innerHTML = `
+    <div class="stat-row"><span>Total Rooms</span><strong>${rooms.length}</strong></div>
+    <div class="stat-row"><span style="color:var(--accent)">● Occupied</span><strong>${occ}</strong></div>
+    <div class="stat-row"><span style="color:var(--text-dim)">● Vacant</span><strong>${vac}</strong></div>
+    <div class="stat-row"><span style="color:var(--red)">● Maintenance</span><strong>${mnt}</strong></div>
+    <div class="stat-row"><span>Occupancy Rate</span><strong>${Math.round(occ/rooms.length*100)}%</strong></div>
+  `;
+  document.getElementById('roomDetail').innerHTML = `<div class="empty-state"><div class="empty-icon">🏠</div><div class="empty-text">Click a room to view details</div></div>`;
+}
+function showRoomDetail(block, num) {
+  const r = DB.rooms[block].find(x=>x.num===num);
+  if(!r) return;
+  const statusColor = r.status==='occupied'?'var(--accent)':r.status==='vacant'?'var(--text-dim)':'var(--red)';
+  document.getElementById('roomDetail').innerHTML = `
+    <div style="text-align:center;margin-bottom:14px">
+      <div style="font-family:'Space Mono',monospace;font-size:28px;font-weight:700;color:${statusColor}">${block}-${num}</div>
+      <span class="pill ${getPillClass(r.status)}" style="margin-top:6px">${r.status.toUpperCase()}</span>
+    </div>
+    ${r.student?`
+    <div style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:12px">
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">CURRENT OCCUPANT</div>
+      <div style="font-weight:700">${r.student}</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:3px">Since ${r.since}</div>
+    </div>
+    <button class="btn btn-danger btn-full" onclick="vacateRoom('${block}','${num}')">Vacate Room</button>
+    `:`
+    <div style="background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:var(--radius-sm);padding:12px;margin-bottom:12px;text-align:center;color:var(--accent);font-size:13px">Room available for allocation</div>
+    <button class="btn btn-primary btn-full" onclick="openModal('room')">Allocate Student</button>
+    `}
+  `;
+}
+function vacateRoom(block, num) {
+  const r = DB.rooms[block].find(x=>x.num===num);
+  if(r&&r.student){ const name=r.student; r.student=null; r.since=null; r.status='vacant'; showToast(`${name} vacated from ${block}-${num}`,'info'); switchBlock(block,null); }}
+
+// ==================== VISITORS ====================
+function renderVisitors() {
+  let data = [...DB.visitors];
+  if(DB.visitorFilter!=='all') data = data.filter(v=>v.status===DB.visitorFilter);
+  const t = document.getElementById('visitorTable');
+  if(!t) return;
+  t.innerHTML = `<thead><tr><th>ID</th><th>Visitor</th><th>Visiting</th><th>Room</th><th>Relation</th><th>In Time</th><th>Out Time</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>${data.map(v=>`<tr>
+      <td><span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-dim)">${v.id}</span></td>
+      <td><strong>${v.name}</strong></td><td>${v.visiting}</td>
+      <td><span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)">${v.room}</span></td>
+      <td style="color:var(--text-muted);font-size:12px">${v.relation}</td>
+      <td>${v.inTime}</td>
+      <td>${v.outTime||'<span style="color:var(--accent)">Still inside</span>'}</td>
+      <td><span class="pill ${getPillClass(v.status)}">${v.status.toUpperCase()}</span></td>
+      <td>${v.status==='active'?`<button class="act-btn" onclick="checkoutVisitor('${v.id}')" title="Check out">↩</button>`:''}</td>
+    </tr>`).join('')}
+    </tbody>`;
+}
+function filterVisitor(f, btn) {
+  DB.visitorFilter = f;
+  document.querySelectorAll('#page-visitors .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderVisitors();
+}
+function checkoutVisitor(id) {
+  const v = DB.visitors.find(x=>x.id===id);
+  if(v){ v.status='exited'; v.outTime=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}); showToast(`${v.name} checked out`,'success'); renderVisitors(); }
+}
+
+// ==================== SMS ====================
+function renderSMS() {
+  document.getElementById('smsCount').textContent = DB.smsCounter+' total today';
+  const t = document.getElementById('smsTable');
+  if(!t) return;
+  t.innerHTML = `<thead><tr><th>ID</th><th>To</th><th>Student</th><th>Message</th><th>Time</th><th>Status</th></tr></thead>
+    <tbody>${DB.smslogs.map(s=>`<tr>
+      <td><span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-dim)">${s.id}</span></td>
+      <td><strong>${s.to}</strong><br><span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text-dim)">${s.phone}</span></td>
+      <td>${s.student}</td>
+      <td style="font-size:12px;color:var(--text-muted);max-width:220px">${s.message}</td>
+      <td style="font-family:'Space Mono',monospace;font-size:11px">${s.time}</td>
+      <td><span class="pill ${getPillClass(s.status)}">${s.status.toUpperCase()}</span></td>
+    </tr>`).join('')}
+    </tbody>`;
+}
+function sendQuickSMS() {
+  const to = document.getElementById('quickSmsTo').value;
+  const msg = document.getElementById('quickSmsMsg').value;
+  if(!msg.trim()){showToast('Please type a message','error');return;}
+  DB.smslogs.unshift({id:'SMS-'+(DB.smslogs.length+100+1),to,phone:'BROADCAST',student:'Selected group',message:msg,time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}),status:'delivered'});
+  DB.smsCounter++;
+  document.getElementById('quickSmsMsg').value='';
+  showToast('SMS sent to '+to,'success');
+  renderSMS();
+}
+
+// ==================== NOTIFICATIONS ====================
+function renderNotifications() {
+  const types = {red:'nd-r',green:'nd-g',blue:'nd-b',yellow:'nd-y'};
+  document.getElementById('sb-notif-count').textContent = DB.notifications.filter(n=>!n.read).length;
+  document.getElementById('fullNotifList').innerHTML = DB.notifications.map((n,i)=>`
+    <div class="notif-item" style="${n.read?'opacity:0.5':''}" onclick="readNotif(${i})">
+      <div class="nd ${types[n.type]||'nd-g'}"></div>
+      <div class="notif-body"><div class="notif-text">${n.text}</div><div class="notif-meta">${n.meta}${n.read?' · Read':' · <strong style=color:var(--accent)>New</strong>'}</div></div>
+    </div>`).join('');
+}
+function readNotif(i){ DB.notifications[i].read=true; renderNotifications(); }
+function markAllRead(){ DB.notifications.forEach(n=>n.read=true); showToast('All notifications marked as read','info'); renderNotifications(); }
+
+// ==================== MESS ====================
+function renderMess() {
+  const total = DB.messMenu.reduce((a,m)=>a+m.votes,0);
+  document.getElementById('messVoteInfo').textContent = total+' total votes';
+  document.getElementById('messMenuItems').innerHTML = DB.messMenu.map((m,i)=>`
+    <div class="menu-item-card ${DB.userVote===m.id?'voted':''}" onclick="selectVote(${m.id})">
+      <div class="mic-rank">${i+1}</div>
+      <div style="font-size:22px">${m.emoji}</div>
+      <div class="mic-info"><div class="mic-name">${m.name}</div><div class="mic-desc">${m.desc}</div></div>
+      <div class="mic-votes">${m.votes} votes</div>
+      <div class="vote-check">${DB.userVote===m.id?'✓':''}</div>
+    </div>`).join('');
+  const barClasses = ['vb-g','vb-b','vb-r','vb-y'];
+  document.getElementById('messLiveResults').innerHTML = DB.messMenu.map((m,i)=>{
+    const pct = Math.round(m.votes/total*100);
+    return `<div class="vote-item"><div class="vote-label"><span>${m.emoji} ${m.name}</span><span class="vote-pct">${pct}%</span></div>
+      <div class="vote-bar-bg"><div class="vote-bar ${barClasses[i]}" style="width:${pct}%"></div></div></div>`;
+  }).join('');
+  document.getElementById('messFeedbackPanel').innerHTML = `
+    <div style="text-align:center;padding:10px 0">
+      <div style="font-size:28px;margin-bottom:8px">⭐ 3.8</div>
+      <div style="font-size:12px;color:var(--text-muted)">Avg rating this week</div>
+      <div style="display:flex;justify-content:center;gap:16px;margin-top:12px;font-family:'Space Mono',monospace;font-size:11px">
+        <div><div style="color:var(--accent);font-weight:700">124</div><div style="color:var(--text-dim)">Reviews</div></div>
+        <div><div style="color:var(--yellow);font-weight:700">38%</div><div style="color:var(--text-dim)">Positive</div></div>
+        <div><div style="color:var(--red);font-weight:700">12%</div><div style="color:var(--text-dim)">Negative</div></div>
+      </div>
+      <button class="btn btn-ghost btn-full" style="margin-top:14px" onclick="showPage('feedback')">View All Feedback →</button>
+    </div>`;
+}
+function selectVote(id){ DB.userVote = DB.userVote===id?null:id; renderMess(); }
+function submitVote(){
+  if(!DB.userVote){showToast('Please select a menu item first','error');return;}
+  const m = DB.messMenu.find(x=>x.id===DB.userVote);
+  m.votes++;
+  showToast(`Voted for ${m.name}! 🍽`,'success');
+  renderMess();
+}
+
+// ==================== FEEDBACK ====================
+function renderFeedback() {
+  const t = document.getElementById('feedbackTable');
+  if(!t) return;
+  const stars = n => '★'.repeat(n)+'☆'.repeat(5-n);
+  t.innerHTML = `<thead><tr><th>ID</th><th>Student</th><th>Room</th><th>Date</th><th>Meal</th><th>Rating</th><th>Comment</th><th>Status</th></tr></thead>
+    <tbody>${DB.feedback.map(f=>`<tr>
+      <td><span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-dim)">${f.id}</span></td>
+      <td><strong>${f.student}</strong></td>
+      <td><span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)">${f.room}</span></td>
+      <td style="font-size:12px;color:var(--text-muted)">${f.date}</td>
+      <td style="font-size:12px">${f.meal}</td>
+      <td style="color:var(--yellow);letter-spacing:-1px">${stars(f.rating)}</td>
+      <td style="font-size:12px;color:var(--text-muted);max-width:200px">${f.comment}</td>
+      <td><span class="pill ${f.status==='reviewed'?'pill-approved':'pill-pending'}">${f.status.toUpperCase()}</span></td>
+    </tr>`).join('')}
+    </tbody>`;
+}
+
+// ==================== COMPLAINTS ====================
+function renderComplaints() {
+  let data = [...DB.complaints];
+  if(DB.complaintFilter==='critical') data = data.filter(c=>c.priority==='critical');
+  else if(DB.complaintFilter!=='all') data = data.filter(c=>c.status===DB.complaintFilter);
+  const container = document.getElementById('complaintCards');
+  if(!container) return;
+  container.innerHTML = data.map(c=>{
+    const pct = Math.min(100,Math.round(c.elapsed/c.slaHours*100));
+    const isOver = c.elapsed>=c.slaHours;
+    const barColor = isOver?'var(--red)':pct>60?'var(--yellow)':'var(--accent)';
+    const priorityColors = {critical:'var(--red)',high:'var(--yellow)',medium:'var(--blue)',low:'var(--text-muted)'};
+    return `<div class="complaint-card" onclick="openModal('viewcomplaint','${c.id}')">
+      <div class="cc-head">
+        <div><span class="cc-id">${c.id}</span></div>
+        <div style="display:flex;gap:8px">
+          <span style="font-family:'Space Mono',monospace;font-size:10px;color:${priorityColors[c.priority]||'var(--text-muted)'}">${c.priority.toUpperCase()}</span>
+          <span class="pill ${getPillClass(c.status)}">${getPillText(c.status)}</span>
+        </div>
+      </div>
+      <div class="cc-title">${c.title}</div>
+      <div class="cc-meta">
+        <span>📍 ${c.location}</span>
+        <span>👤 ${c.student}</span>
+        ${c.assignedTo?`<span>🔧 ${c.assignedTo}</span>`:''}
+      </div>
+      <div class="sla-bar-wrap">
+        <div style="display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:10px;color:var(--text-dim);margin-bottom:5px">
+          <span>SLA Progress</span><span style="color:${barColor}">${isOver?'OVERDUE by '+(c.elapsed-c.slaHours)+'h':'Due in '+(c.slaHours-c.elapsed)+'h'}</span>
+        </div>
+        <div class="sla-bar-bg"><div class="sla-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function filterComplaints(f, btn) {
+  DB.complaintFilter = f;
+  document.querySelectorAll('#page-complaints .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderComplaints();
+}
+
+// ==================== REPORTS ====================
+function renderReports() {
+  const grid = document.getElementById('reportGrid');
+  if(!grid) return;
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const gpData = [12,8,15,6,18,22,9];
+  const smsData = [140,120,180,90,210,250,110];
+  const maxGP = Math.max(...gpData);
+  const maxSMS = Math.max(...smsData);
+  grid.innerHTML = `
+    <div class="report-card">
+      <div class="rc-title">Gate Passes / Week <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--accent)">90 total</span></div>
+      <div class="mini-chart">${gpData.map((v,i)=>`<div class="mc-bar mc-bar-g" style="height:${Math.round(v/maxGP*80)}px" title="${days[i]}: ${v}"></div>`).join('')}</div>
+      <div class="chart-labels">${days.map(d=>`<div class="chart-lbl">${d}</div>`).join('')}</div>
+    </div>
+    <div class="report-card">
+      <div class="rc-title">SMS Sent / Week <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--blue)">1100 total</span></div>
+      <div class="mini-chart">${smsData.map((v,i)=>`<div class="mc-bar mc-bar-b" style="height:${Math.round(v/maxSMS*80)}px" title="${days[i]}: ${v}"></div>`).join('')}</div>
+      <div class="chart-labels">${days.map(d=>`<div class="chart-lbl">${d}</div>`).join('')}</div>
+    </div>
+    <div class="report-card">
+      <div class="rc-title">Complaints by Priority</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+        ${[{label:'Critical',val:DB.complaints.filter(c=>c.priority==='critical').length,color:'var(--red)'},
+           {label:'High',val:DB.complaints.filter(c=>c.priority==='high').length,color:'var(--yellow)'},
+           {label:'Medium',val:DB.complaints.filter(c=>c.priority==='medium').length,color:'var(--blue)'},
+           {label:'Low',val:DB.complaints.filter(c=>c.priority==='low').length,color:'var(--text-muted)'},
+          ].map(x=>`<div style="background:var(--surface3);border-radius:var(--radius-sm);padding:12px;text-align:center">
+          <div style="font-size:24px;font-weight:800;color:${x.color}">${x.val}</div>
+          <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text-dim)">${x.label}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="report-card">
+      <div class="rc-title">Room Occupancy</div>
+      ${['A','B','C'].map(b=>{
+        const rooms = DB.rooms[b];
+        const occ = rooms.filter(r=>r.status==='occupied').length;
+        const pct = Math.round(occ/rooms.length*100);
+        return `<div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:13px">
+            <span>Block ${b}</span><span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--accent)">${pct}%</span>
+          </div>
+          <div class="vote-bar-bg"><div class="vote-bar vb-g" style="width:${pct}%"></div></div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+// ==================== MODALS ====================
+function openModal(type, data) {
+  const overlay = document.getElementById('modalOverlay');
+  const title = document.getElementById('modalTitle');
+  const body = document.getElementById('modalBody');
+  const footer = document.getElementById('modalFooter');
+
+  if(type==='gatepass') {
+    title.textContent = 'New Gate Pass Request';
+    body.innerHTML = `
+      <div class="form-group"><label class="form-label">Student Name</label>
+        <select class="form-select" id="gpStudent">${DB.students.map(s=>`<option>${s}</option>`).join('')}</select></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Room</label><input class="form-input" id="gpRoom" placeholder="e.g. A-204"/></div>
+        <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="gpPhone" placeholder="98765XXXXX"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Exit Time</label><input class="form-input" id="gpExit" type="time" value="10:00"/></div>
+        <div class="form-group"><label class="form-label">Return Time</label><input class="form-input" id="gpReturn" type="time" value="22:00"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Reason</label><input class="form-input" id="gpReason" placeholder="Reason for leaving hostel"/></div>`;
+    footer.innerHTML = `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="submitGP()">Submit & Send SMS</button>`;
+  } else if(type==='viewgp' && data) {
+    title.textContent = 'Gate Pass — '+data.id;
+    body.innerHTML = `
+      <div style="display:grid;gap:10px">
+        ${[['Student',data.student],['Room',data.room],['Phone',data.phone],['Date',data.date],['Exit',data.exitTime],['Return',data.returnTime],['Reason',data.reason]].map(([k,v])=>`
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+          <span style="color:var(--text-muted);font-size:12px">${k}</span><strong style="font-size:13px">${v}</strong></div>`).join('')}
+        <div style="display:flex;justify-content:space-between;padding:8px 0">
+          <span style="color:var(--text-muted);font-size:12px">Status</span><span class="pill ${getPillClass(data.status)}">${getPillText(data.status)}</span></div>
+      </div>`;
+    footer.innerHTML = `${data.status==='pending'?`<button class="btn btn-primary" onclick="approveGP('${data.id}');closeModal()">Approve</button><button class="btn btn-danger" onclick="denyGP('${data.id}');closeModal()">Deny</button>`:''}
+      <button class="btn btn-ghost" onclick="closeModal()">Close</button>`;
+  } else if(type==='room') {
+    title.textContent = 'Allocate Room';
+    const vacant = [];
+    ['A','B','C'].forEach(b=>DB.rooms[b].forEach(r=>{if(r.status==='vacant')vacant.push(`${b}-${r.num}`);}));
+    body.innerHTML = `
+      <div class="form-group"><label class="form-label">Select Student</label>
+        <select class="form-select" id="allocStudent">${DB.students.map(s=>`<option>${s}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Select Room</label>
+        <select class="form-select" id="allocRoom">${vacant.map(r=>`<option>${r}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Move-in Date</label><input class="form-input" id="allocDate" type="date" value="${new Date().toISOString().split('T')[0]}"/></div>`;
+    footer.innerHTML = `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="submitAlloc()">Allocate</button>`;
+  } else if(type==='visitor') {
+    title.textContent = 'Log New Visitor';
+    body.innerHTML = `
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Visitor Name</label><input class="form-input" id="vName" placeholder="Full name"/></div>
+        <div class="form-group"><label class="form-label">Relation</label><input class="form-input" id="vRelation" placeholder="Father/Mother..."/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Visiting Student</label>
+          <select class="form-select" id="vStudent">${DB.students.map(s=>`<option>${s}</option>`).join('')}</select></div>
+        <div class="form-group"><label class="form-label">Room</label><input class="form-input" id="vRoom" placeholder="e.g. A-204"/></div>
+      </div>`;
+    footer.innerHTML = `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="submitVisitor()">Log Visitor</button>`;
+  } else if(type==='sms') {
+    title.textContent = 'Send SMS Alert';
+    body.innerHTML = `
+      <div class="form-group"><label class="form-label">Recipient</label>
+        <select class="form-select" id="smsTo"><option>All Parents</option><option>Block A Parents</option><option>Block B Parents</option><option>Block C Parents</option></select></div>
+      <div class="form-group"><label class="form-label">Message</label><textarea class="form-input" id="smsMsg" rows="4" placeholder="Type message..."></textarea></div>`;
+    footer.innerHTML = `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="submitSMS()">Send</button>`;
+  } else if(type==='complaint') {
+    title.textContent = 'File New Complaint';
+    body.innerHTML = `
+      <div class="form-group"><label class="form-label">Title</label><input class="form-input" id="cTitle" placeholder="Brief description"/></div>
+      <div class="form-group"><label class="form-label">Location</label><input class="form-input" id="cLocation" placeholder="Block / Room / Area"/></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Priority</label>
+          <select class="form-select" id="cPriority"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="critical">Critical</option></select></div>
+        <div class="form-group"><label class="form-label">Your Room</label><input class="form-input" id="cRoom" placeholder="A-204"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Filed By</label>
+        <select class="form-select" id="cStudent">${DB.students.map(s=>`<option>${s}</option>`).join('')}</select></div>`;
+    footer.innerHTML = `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="submitComplaint()">Submit Complaint</button>`;
+  } else if(type==='viewcomplaint') {
+    const c = DB.complaints.find(x=>x.id===data);
+    if(!c) return;
+    const isOver = c.elapsed>=c.slaHours;
+    title.textContent = 'Complaint — '+c.id;
+    body.innerHTML = `
+      <div style="display:grid;gap:8px">
+        ${[['Title',c.title],['Location',c.location],['Filed By',c.student],['Room',c.room],['Block',c.block],['Filed At',c.filed],['Assigned To',c.assignedTo||'Unassigned']].map(([k,v])=>`
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)">
+          <span style="color:var(--text-muted);font-size:12px">${k}</span><strong style="font-size:13px">${v}</strong></div>`).join('')}
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)">
+          <span style="color:var(--text-muted);font-size:12px">Status</span><span class="pill ${getPillClass(c.status)}">${getPillText(c.status)}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0">
+          <span style="color:var(--text-muted);font-size:12px">SLA</span><span style="font-family:'Space Mono',monospace;font-size:11px;color:${isOver?'var(--red)':'var(--accent)'}">${isOver?'OVERDUE '+( c.elapsed-c.slaHours)+'h':'OK — '+( c.slaHours-c.elapsed)+'h left'}</span></div>
+      </div>`;
+    footer.innerHTML = `
+      ${c.status!=='closed'?`<button class="btn btn-primary" onclick="resolveComplaint('${c.id}')">Mark Resolved</button>`:''}
+      ${c.status==='open'?`<button class="btn btn-ghost" onclick="assignComplaint('${c.id}')">Assign</button>`:''}
+      <button class="btn btn-ghost" onclick="closeModal()">Close</button>`;
+  } else if(type==='addmenu') {
+    title.textContent = 'Add Menu Item';
+    body.innerHTML = `
+      <div class="form-group"><label class="form-label">Dish Name</label><input class="form-input" id="menuName" placeholder="e.g. Biryani"/></div>
+      <div class="form-group"><label class="form-label">Description</label><input class="form-input" id="menuDesc" placeholder="Short description"/></div>
+      <div class="form-group"><label class="form-label">Emoji</label><input class="form-input" id="menuEmoji" placeholder="🍛" maxlength="2" style="width:80px"/></div>`;
+    footer.innerHTML = `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="submitMenu()">Add to Menu</button>`;
+  } else if(type==='feedback') {
+    title.textContent = 'Submit Feedback';
+    body.innerHTML = `
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Student</label>
+          <select class="form-select" id="fbStudent">${DB.students.map(s=>`<option>${s}</option>`).join('')}</select></div>
+        <div class="form-group"><label class="form-label">Meal</label>
+          <select class="form-select" id="fbMeal"><option>Breakfast</option><option>Lunch</option><option>Dinner</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Rating (1–5)</label>
+        <select class="form-select" id="fbRating"><option>5 ★★★★★</option><option>4 ★★★★☆</option><option>3 ★★★☆☆</option><option>2 ★★☆☆☆</option><option>1 ★☆☆☆☆</option></select></div>
+      <div class="form-group"><label class="form-label">Comment</label><textarea class="form-input" id="fbComment" rows="3" placeholder="Your feedback..."></textarea></div>`;
+    footer.innerHTML = `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="submitFeedback()">Submit</button>`;
+  }
+  overlay.classList.add('open');
+}
+
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+function closeModalIfOutside(e) { if(e.target===document.getElementById('modalOverlay')) closeModal(); }
+
+// Modal submit handlers
+function submitGP() {
+  const student = document.getElementById('gpStudent').value;
+  const room = document.getElementById('gpRoom').value;
+  const phone = document.getElementById('gpPhone').value;
+  const exit = document.getElementById('gpExit').value;
+  const ret = document.getElementById('gpReturn').value;
+  const reason = document.getElementById('gpReason').value;
+  if(!room||!phone){showToast('Please fill all fields','error');return;}
+  const id = 'GP-'+(DB.gatePasses.length+330+1);
+  DB.gatePasses.unshift({id,student,room,phone,exitTime:exit,returnTime:ret,date:new Date().toISOString().split('T')[0],reason,status:'pending'});
+  closeModal(); showToast('Gate pass request submitted!','success');
+  renderDashboard(); renderGatePasses&&renderGatePasses();
+}
+function submitAlloc() {
+  const student = document.getElementById('allocStudent').value;
+  const roomStr = document.getElementById('allocRoom').value;
+  const block = roomStr[0];
+  const num = roomStr.slice(2);
+  const r = DB.rooms[block]&&DB.rooms[block].find(x=>x.num===num);
+  if(r){ r.student=student; r.status='occupied'; r.since=new Date().toLocaleDateString('en-IN',{month:'short',year:'numeric'}); }
+  closeModal(); showToast(`${student} allocated to ${roomStr}`,'success');
+  renderRooms&&renderRooms();
+}
+function submitVisitor() {
+  const name = document.getElementById('vName').value;
+  const relation = document.getElementById('vRelation').value;
+  const student = document.getElementById('vStudent').value;
+  const room = document.getElementById('vRoom').value;
+  if(!name){showToast('Please enter visitor name','error');return;}
+  const id = 'V-'+(DB.visitors.length+1).toString().padStart(3,'0');
+  DB.visitors.unshift({id,name,visiting:student,room,relation,inTime:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}),outTime:null,date:new Date().toISOString().split('T')[0],status:'active'});
+  closeModal(); showToast('Visitor logged!','success');
+  renderVisitors&&renderVisitors();
+}
+function submitSMS() {
+  const to = document.getElementById('smsTo').value;
+  const msg = document.getElementById('smsMsg').value;
+  if(!msg.trim()){showToast('Please type a message','error');return;}
+  DB.smslogs.unshift({id:'SMS-'+(DB.smslogs.length+100+1),to,phone:'BROADCAST',student:'Selected group',message:msg,time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}),status:'delivered'});
+  DB.smsCounter++;
+  closeModal(); showToast('SMS sent to '+to,'success');
+  renderSMS&&renderSMS();
+}
+function submitComplaint() {
+  const title = document.getElementById('cTitle').value;
+  const location = document.getElementById('cLocation').value;
+  const priority = document.getElementById('cPriority').value;
+  const room = document.getElementById('cRoom').value;
+  const student = document.getElementById('cStudent').value;
+  if(!title||!location){showToast('Please fill all fields','error');return;}
+  const slaMap = {critical:2,high:8,medium:48,low:72};
+  const id = 'C-'+(DB.complaints.length+55).toString().padStart(3,'0');
+  DB.complaints.unshift({id,title,location,block:room[0]||'A',priority,status:'open',student,room,filed:new Date().toLocaleString(),slaHours:slaMap[priority],elapsed:0,assignedTo:null});
+  closeModal(); showToast('Complaint filed!','success');
+  renderComplaints&&renderComplaints(); renderDashboard&&renderDashboard();
+}
+function submitMenu() {
+  const name = document.getElementById('menuName').value;
+  const desc = document.getElementById('menuDesc').value;
+  const emoji = document.getElementById('menuEmoji').value||'🍛';
+  if(!name){showToast('Please enter dish name','error');return;}
+  DB.messMenu.push({id:DB.messMenu.length+1,name,desc,emoji,votes:0});
+  closeModal(); showToast(name+' added to menu!','success');
+  renderMess&&renderMess();
+}
+function submitFeedback() {
+  const student = document.getElementById('fbStudent').value;
+  const meal = document.getElementById('fbMeal').value;
+  const rating = 6-parseInt(document.getElementById('fbRating').value[0]);
+  const comment = document.getElementById('fbComment').value;
+  const id = 'FB-'+(DB.feedback.length+1).toString().padStart(3,'0');
+  DB.feedback.unshift({id,student,room:'',date:new Date().toISOString().split('T')[0],meal,rating,comment,status:'pending'});
+  closeModal(); showToast('Feedback submitted!','success');
+  renderFeedback&&renderFeedback();
+}
+function resolveComplaint(id){ const c=DB.complaints.find(x=>x.id===id); if(c){c.status='closed'; closeModal(); showToast('Complaint resolved!','success'); renderComplaints&&renderComplaints(); renderDashboard&&renderDashboard();} }
+function assignComplaint(id){ const c=DB.complaints.find(x=>x.id===id); if(c){c.assignedTo='Maintenance Team'; c.status='inprogress'; closeModal(); showToast('Complaint assigned','info'); renderComplaints&&renderComplaints();} }
+
+// ==================== GLOBAL SEARCH ====================
+function globalSearchFn(q) {
+  if(!q) return;
+  const lower = q.toLowerCase();
+  const gpMatch = DB.gatePasses.find(g=>g.student.toLowerCase().includes(lower));
+  const rMatch = Object.values(DB.rooms).flat().find(r=>r.student&&r.student.toLowerCase().includes(lower));
+  if(gpMatch||rMatch) showToast(`Found results for "${q}" — check Gate Passes or Rooms`,'info',4000);
+}
+
+// ==================== INIT ====================
+function setTopNav(btn) {
+  document.querySelectorAll('.tb-btn').forEach(b => b.classList.remove('primary'));
+  if(btn) btn.classList.add('primary');
+}
+renderDashboard();
+</script>
+</body>
+</html>
