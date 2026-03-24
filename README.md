@@ -1,2 +1,2 @@
 # Neural_Ninjas
-TechKruti_2k26
+TechKruti_2k26.
