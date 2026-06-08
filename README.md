@@ -1,5 +1,6 @@
 # 🚀 HostelSync – Smart Hostel Operations Platform
 
+
 ## 🏆 Hackathon Details
 
 * **Event Name:** TechKruti
